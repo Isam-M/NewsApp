@@ -8,6 +8,7 @@ struct ArticleDetailView: View {
     @Environment(\.modelContext) private var context
     @State private var selectedCategory: Category?
     @State private var notes: String = ""
+    @State private var isSaved: Bool = false 
     @Query private var categories: [Category]
 
     init(article: Article? = nil, apiArticle: ArticleResponse? = nil) {
@@ -49,16 +50,32 @@ struct ArticleDetailView: View {
                 if let description = apiArticle?.description ?? article?.articleDescription {
                     Text(description)
                         .font(.body)
+                        .padding(.bottom)
                 }
 
-                if article == nil {
-                    // Lagre artikkel-knapp for API-hentede artikler
+                // Innhold
+                if let content = apiArticle?.content ?? article?.content {
+                    Text("Content:")
+                        .font(.headline)
+                        .padding(.bottom, 4)
+                    Text(content)
+                        .font(.body)
+                }
+
+                if article == nil && !isSaved {
+                    // Lagre artikkel-seksjon for API-hentede artikler
                     saveArticleSection()
+                } else if isSaved {
+                    Text("Article has been saved!")
+                        .font(.headline)
+                        .foregroundColor(.green)
+                        .padding(.top)
                 } else {
                     // Vis notater for lagrede artikler
                     if let notes = article?.notes, !notes.isEmpty {
                         Text("Notes:")
                             .font(.headline)
+                            .padding(.top)
                         Text(notes)
                             .font(.body)
                     }
@@ -71,7 +88,9 @@ struct ArticleDetailView: View {
     }
 
     private func saveArticleSection() -> some View {
-        VStack {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Select a category:")
+                .font(.headline)
             Picker("Category", selection: $selectedCategory) {
                 Text("None").tag(nil as Category?)
                 ForEach(categories, id: \.self) { category in
@@ -82,6 +101,7 @@ struct ArticleDetailView: View {
 
             TextField("Add notes...", text: $notes)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding(.top)
 
             Button(action: saveArticle) {
                 Text("Save Article")
@@ -96,7 +116,10 @@ struct ArticleDetailView: View {
     }
 
     private func saveArticle() {
-        guard let apiArticle = apiArticle, let selectedCategory = selectedCategory else { return }
+        guard let apiArticle = apiArticle, let selectedCategory = selectedCategory else {
+            print("Please select a category")
+            return
+        }
 
         let newArticle = Article(
             title: apiArticle.title,
@@ -115,6 +138,7 @@ struct ArticleDetailView: View {
         do {
             try context.save()
             print("Article saved!")
+            isSaved = true
         } catch {
             print("Failed to save article: \(error)")
         }
