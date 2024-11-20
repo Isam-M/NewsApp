@@ -12,12 +12,16 @@ struct NewsAPIResponse: Decodable {
 }
 
 struct ArticleResponse: Identifiable, Decodable {
-    let id = UUID() // For bruk i SwiftUI
+    let id = UUID() 
     let title: String
     let description: String?
+    let url: String?
     let urlToImage: String?
     let source: Source
+    let publishedAt: String?
+    let content: String?
 }
+
 
 struct Source: Decodable {
     let name: String

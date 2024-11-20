@@ -17,35 +17,39 @@ struct SearchView: View {
     var body: some View {
         NavigationStack {
             VStack {
+                // Søkefelt
                 TextField("Search news...", text: $query, onCommit: fetchArticles)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding()
                 
-
+                // Vis søkeresultater eller lastestatus
                 if isLoading {
                     ProgressView("Loading...")
                 } else {
                     List(articles) { article in
-                        HStack {
-                            if let url = article.urlToImage, let imageURL = URL(string: url) {
-                                AsyncImage(url: imageURL) { image in
-                                    image
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 50, height: 50)
-                                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                                } placeholder: {
-                                    ProgressView()
+                        NavigationLink(destination: ArticleDetailView(article: article)) {
+                            HStack {
+                                // Bilde hvis tilgjengelig
+                                if let url = article.urlToImage, let imageURL = URL(string: url) {
+                                    AsyncImage(url: imageURL) { image in
+                                        image
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 50, height: 50)
+                                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    } placeholder: {
+                                        ProgressView()
+                                    }
                                 }
-                            }
-                            
-                            
-                            VStack(alignment: .leading) {
-                                Text(article.title)
-                                    .font(.headline)
-                                Text(article.source.name)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
+                                
+                                // Tittel og kilde
+                                VStack(alignment: .leading) {
+                                    Text(article.title)
+                                        .font(.headline)
+                                    Text(article.source.name)
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
                             }
                         }
                     }
@@ -56,7 +60,7 @@ struct SearchView: View {
     }
     
     func fetchArticles() {
-        
+        // Start søk
         Task {
             isLoading = true
             articles = await apiService.fetchArticles(query: query)
