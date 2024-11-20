@@ -12,7 +12,7 @@ struct NewsAPIResponse: Decodable {
 }
 
 struct ArticleResponse: Identifiable, Decodable {
-    let id = UUID() 
+    let id = UUID()
     let title: String
     let description: String?
     let url: String?

@@ -27,7 +27,7 @@ struct SearchView: View {
                     ProgressView("Loading...")
                 } else {
                     List(articles) { article in
-                        NavigationLink(destination: ArticleDetailView(article: article)) {
+                        NavigationLink(destination: ArticleDetailView(apiArticle: article)) {
                             HStack {
                                 // Bilde hvis tilgjengelig
                                 if let url = article.urlToImage, let imageURL = URL(string: url) {
