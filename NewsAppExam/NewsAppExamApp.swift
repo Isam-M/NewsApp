@@ -24,7 +24,7 @@ struct NewsAppExamApp: App {
     }
 }
 
-// Opprett ModelContainer
+
 var sharedModelContainer: ModelContainer = {
     // Definer skjemaet med modellene som skal inkluderes
     let schema = Schema([Article.self, Category.self, Search.self, Country.self])

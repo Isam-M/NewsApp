@@ -8,7 +8,9 @@ struct ArticleDetailView: View {
     @Environment(\.modelContext) private var context
     @State private var selectedCategory: Category?
     @State private var notes: String = ""
-    @State private var isSaved: Bool = false 
+    @State private var isEditingCategory: Bool = false
+    @State private var isEditingNotes: Bool = false
+    @State private var isSaved: Bool = false
     @Query private var categories: [Category]
 
     init(article: Article? = nil, apiArticle: ArticleResponse? = nil) {
@@ -41,7 +43,7 @@ struct ArticleDetailView: View {
 
                 // Publiseringsdato
                 if let publishedAt = apiArticle?.publishedAt ?? article?.publishedAt {
-                    Text("Published: \(formatDate(publishedAt))")
+                    Text("Published: \(DateFormatterHelper.formatDate(publishedAt))")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
@@ -63,22 +65,9 @@ struct ArticleDetailView: View {
                 }
 
                 if article == nil && !isSaved {
-                    // Lagre artikkel-seksjon for API-hentede artikler
                     saveArticleSection()
-                } else if isSaved {
-                    Text("Article has been saved!")
-                        .font(.headline)
-                        .foregroundColor(.green)
-                        .padding(.top)
                 } else {
-                    // Vis notater for lagrede artikler
-                    if let notes = article?.notes, !notes.isEmpty {
-                        Text("Notes:")
-                            .font(.headline)
-                            .padding(.top)
-                        Text(notes)
-                            .font(.body)
-                    }
+                    editArticleSection()
                 }
             }
             .padding()
@@ -115,6 +104,74 @@ struct ArticleDetailView: View {
         }
     }
 
+    private func editArticleSection() -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Rediger kategori
+            HStack {
+                if isEditingCategory {
+                    Picker("Category", selection: $selectedCategory) {
+                        ForEach(categories, id: \.self) { category in
+                            Text(category.name).tag(category)
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                    .onAppear {
+                        if selectedCategory == nil, let currentCategory = article?.category {
+                            selectedCategory = currentCategory
+                        }
+                    }
+                } else {
+                    Text("Category: \(article?.category.name ?? "None")")
+                        .font(.headline)
+                }
+                Spacer()
+                Button(action: { isEditingCategory.toggle() }) {
+                    Image(systemName: "pencil")
+                        .foregroundColor(.blue)
+                }
+            }
+
+            // Rediger notater
+            HStack {
+                if isEditingNotes {
+                    TextField("Update notes...", text: $notes)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .onAppear {
+                            if notes.isEmpty, let currentNotes = article?.notes {
+                                notes = currentNotes
+                            }
+                        }
+                } else {
+                    VStack(alignment: .leading) {
+                        Text("Notes:")
+                            .font(.headline)
+                        Text(article?.notes ?? "No notes added")
+                            .font(.body)
+                    }
+                }
+                Spacer()
+                Button(action: { isEditingNotes.toggle() }) {
+                    Image(systemName: "pencil")
+                        .foregroundColor(.blue)
+                        
+                }
+            }
+
+            // Lagre endringer
+            if isEditingCategory || isEditingNotes {
+                Button(action: updateArticle) {
+                    Text("Save Changes")
+                        .bold()
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.orange)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+            }
+        }
+    }
+
     private func saveArticle() {
         guard let apiArticle = apiArticle, let selectedCategory = selectedCategory else {
             print("Please select a category")
@@ -144,13 +201,26 @@ struct ArticleDetailView: View {
         }
     }
 
-    private func formatDate(_ isoDate: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        if let date = formatter.date(from: isoDate) {
-            let displayFormatter = DateFormatter()
-            displayFormatter.dateStyle = .medium
-            return displayFormatter.string(from: date)
+    private func updateArticle() {
+        guard let article = article else { return }
+
+        if let newCategory = selectedCategory {
+            article.category = newCategory
         }
-        return isoDate
+        if !notes.isEmpty {
+            article.notes = notes
+        }
+
+        article.updatedAt = Date()
+
+        do {
+            try context.save()
+            print("Article updated!")
+            isEditingCategory = false
+            isEditingNotes = false
+        } catch {
+            print("Failed to update article: \(error)")
+        }
     }
+
 }
