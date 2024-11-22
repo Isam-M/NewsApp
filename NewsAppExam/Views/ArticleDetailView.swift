@@ -64,114 +64,38 @@ struct ArticleDetailView: View {
                         .font(.body)
                 }
 
+                // Velg lagre- eller redigeringsseksjon
                 if article == nil && !isSaved {
-                    saveArticleSection()
+                    SaveArticleSection(
+                        selectedCategory: $selectedCategory,
+                        notes: $notes,
+                        categories: categories,
+                        onSave: saveArticle
+                    )
                 } else {
-                    editArticleSection()
+                    EditArticleSection(
+                        selectedCategory: $selectedCategory,
+                        notes: $notes,
+                        isEditingCategory: $isEditingCategory,
+                        isEditingNotes: $isEditingNotes,
+                        categories: categories,
+                        onSave: updateArticle
+                    )
                 }
             }
             .padding()
         }
         .navigationTitle("Article Details")
         .navigationBarTitleDisplayMode(.inline)
-    }
-
-    private func saveArticleSection() -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Select a category:")
-                .font(.headline)
-            Picker("Category", selection: $selectedCategory) {
-                Text("None").tag(nil as Category?)
-                ForEach(categories, id: \.self) { category in
-                    Text(category.name).tag(category as Category?)
-                }
-            }
-            .pickerStyle(MenuPickerStyle())
-
-            TextField("Add notes...", text: $notes)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding(.top)
-
-            Button(action: saveArticle) {
-                Text("Save Article")
-                    .bold()
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+        .onAppear {
+            if let article = article {
+                selectedCategory = article.category
+                notes = article.notes
             }
         }
     }
 
-    private func editArticleSection() -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Rediger kategori
-            HStack {
-                if isEditingCategory {
-                    Picker("Category", selection: $selectedCategory) {
-                        ForEach(categories, id: \.self) { category in
-                            Text(category.name).tag(category)
-                        }
-                    }
-                    .pickerStyle(MenuPickerStyle())
-                    .onAppear {
-                        if selectedCategory == nil, let currentCategory = article?.category {
-                            selectedCategory = currentCategory
-                        }
-                    }
-                } else {
-                    Text("Category: \(article?.category.name ?? "None")")
-                        .font(.headline)
-                }
-                Spacer()
-                Button(action: { isEditingCategory.toggle() }) {
-                    Image(systemName: "pencil")
-                        .foregroundColor(.blue)
-                }
-            }
-
-            // Rediger notater
-            HStack {
-                if isEditingNotes {
-                    TextField("Update notes...", text: $notes)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .onAppear {
-                            if notes.isEmpty, let currentNotes = article?.notes {
-                                notes = currentNotes
-                            }
-                        }
-                } else {
-                    VStack(alignment: .leading) {
-                        Text("Notes:")
-                            .font(.headline)
-                        Text(article?.notes ?? "No notes added")
-                            .font(.body)
-                    }
-                }
-                Spacer()
-                Button(action: { isEditingNotes.toggle() }) {
-                    Image(systemName: "pencil")
-                        .foregroundColor(.blue)
-                        
-                }
-            }
-
-            // Lagre endringer
-            if isEditingCategory || isEditingNotes {
-                Button(action: updateArticle) {
-                    Text("Save Changes")
-                        .bold()
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.orange)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
-            }
-        }
-    }
-
+    // Lagre ny artikkel
     private func saveArticle() {
         guard let apiArticle = apiArticle, let selectedCategory = selectedCategory else {
             print("Please select a category")
@@ -201,16 +125,14 @@ struct ArticleDetailView: View {
         }
     }
 
+    // Oppdater eksisterende artikkel
     private func updateArticle() {
         guard let article = article else { return }
 
         if let newCategory = selectedCategory {
             article.category = newCategory
         }
-        if !notes.isEmpty {
-            article.notes = notes
-        }
-
+        article.notes = notes
         article.updatedAt = Date()
 
         do {
@@ -222,5 +144,4 @@ struct ArticleDetailView: View {
             print("Failed to update article: \(error)")
         }
     }
-
 }

@@ -11,7 +11,7 @@ import SwiftData
 @main
 struct NewsAppExamApp: App {
     init() {
-           
+        
         Category.defaultCategories(context: sharedModelContainer.mainContext)
        }
     
@@ -40,3 +40,14 @@ var sharedModelContainer: ModelContainer = {
         fatalError("Could not create model container: \(error.localizedDescription)")
     }
 }()
+
+
+
+//Brukes kun når nødvendig!
+func resetDatabase() {
+    let storeURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("newsapi.store")
+    if let url = storeURL {
+        try? FileManager.default.removeItem(at: url)
+        print("Database reset successfully.")
+    }
+}

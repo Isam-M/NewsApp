@@ -12,8 +12,8 @@ import SwiftData
 struct EditArticleSection: View {
     @Binding var selectedCategory: Category?
     @Binding var notes: String
-    @State private var isEditingCategory: Bool
-    @State private var isEditingNotes: Bool
+    @Binding  var isEditingCategory: Bool
+    @Binding  var isEditingNotes: Bool
     var categories: [Category]
     var onSave: () -> Void
 

@@ -14,6 +14,7 @@ struct SetupView: View {
         NavigationStack {
             List {
                 NavigationLink("Manage Categories", destination: CategoryManagerView())
+                NavigationLink("View Archived Articles", destination: ArchivedArticlesView())
             }
             .navigationTitle("Setup")
         }

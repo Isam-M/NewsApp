@@ -33,3 +33,17 @@ class Category: Identifiable {
     }
 
 }
+
+extension Category {
+    static func uncategorizedCategory(context: ModelContext) -> Category {
+        let fetchRequest = FetchDescriptor<Category>(predicate: #Predicate { $0.name == "Uncategorized" })
+        if let existing = try? context.fetch(fetchRequest).first {
+            return existing
+        } else {
+            let uncategorized = Category(name: "Uncategorized")
+            context.insert(uncategorized)
+            try? context.save()
+            return uncategorized
+        }
+    }
+}

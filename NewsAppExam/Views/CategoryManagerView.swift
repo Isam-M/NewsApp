@@ -11,6 +11,7 @@ import SwiftData
 
 struct CategoryManagerView: View {
     @Query private var categories: [Category]
+    @Query private var articles: [Article]
     @Environment(\.modelContext) private var context
     @State private var newCategoryName: String = ""
 
@@ -23,14 +24,17 @@ struct CategoryManagerView: View {
                         HStack {
                             Text(category.name)
                             Spacer()
-                            Button(role: .destructive) {
-                                deleteCategory(category)
-                            } label: {
-                                Image(systemName: "trash")
+                            if category.name != "Uncategorized" {
+                                Button(role: .destructive) {
+                                    deleteCategory(category)
+                                } label: {
+                                    Image(systemName: "trash")
+                                }
                             }
                         }
                     }
                 }
+
 
                 // Legg til ny kategori
                 HStack {
@@ -59,11 +63,28 @@ struct CategoryManagerView: View {
     }
 
     private func deleteCategory(_ category: Category) {
+        let uncategorized = Category.uncategorizedCategory(context: context)
+        
+        // Forhindre sletting av "Uncategorized"
+        guard category != uncategorized else {
+            print("Cannot delete the Uncategorized category")
+            return
+        }
+
+        // Flytt artikler til "Uncategorized"
+        for article in articles where article.category == category {
+            article.category = uncategorized
+        }
+
+        // Slett kategorien
         context.delete(category)
         do {
             try context.save()
+            print("Category deleted successfully")
         } catch {
             print("Failed to delete category: \(error)")
         }
     }
+
+
 }
