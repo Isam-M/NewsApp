@@ -95,7 +95,7 @@ struct ArticleDetailView: View {
         }
     }
 
-    // Lagre ny artikkel
+    
     private func saveArticle() {
         guard let apiArticle = apiArticle, let selectedCategory = selectedCategory else {
             print("Please select a category")
@@ -125,7 +125,7 @@ struct ArticleDetailView: View {
         }
     }
 
-    // Oppdater eksisterende artikkel
+    
     private func updateArticle() {
         guard let article = article else { return }
 

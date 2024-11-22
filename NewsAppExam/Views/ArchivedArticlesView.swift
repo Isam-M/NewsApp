@@ -26,12 +26,12 @@ struct ArchivedArticlesView: View {
         }
     }
 
-    // MARK: - Filtered Archived Articles
+    
     private var archivedArticles: [Article] {
         return articles.filter { $0.isArchived }
     }
 
-    // MARK: - Empty State View
+    
     private var emptyStateView: some View {
         VStack {
             Image(systemName: "archivebox")
@@ -45,7 +45,7 @@ struct ArchivedArticlesView: View {
         }
     }
 
-    // MARK: - Archived Articles List
+    
     private var archivedArticlesList: some View {
         List {
             ForEach(archivedArticles) { article in
@@ -74,7 +74,7 @@ struct ArchivedArticlesView: View {
         }
     }
 
-    // MARK: - Delete Article
+    
     private func deleteArticle(_ article: Article) {
         context.delete(article)
 
@@ -86,7 +86,7 @@ struct ArchivedArticlesView: View {
         }
     }
 
-    // MARK: - Restore Article
+    
     private func restoreArticle(_ article: Article) {
         article.isArchived = false
 

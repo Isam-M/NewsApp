@@ -71,7 +71,7 @@ struct HomeView: View {
         }
     }
     
-    // MARK: - Toolbar
+    
     private var categoryPickerToolbar: some ToolbarContent {
         ToolbarItem(placement: .navigationBarTrailing) {
             Menu {
@@ -90,7 +90,7 @@ struct HomeView: View {
     }
 
 
-    // MARK: - Archive Article
+    
     private func archiveArticle(at offsets: IndexSet) {
         for index in offsets {
             let article = filteredArticles[index]
@@ -100,21 +100,6 @@ struct HomeView: View {
     }
 }
     
-    // Konverterer Article til ArticleResponse for detaljvisning
-    private func convertToArticleResponse(_ article: Article) -> ArticleResponse {
-        return ArticleResponse(
-    
-            title: article.title,
-            description: article.articleDescription,
-            url: nil,
-            urlToImage: nil,
-            source: Source(name: article.source),
-            publishedAt: nil,
-            content: article.notes
-        )
-    }
-
-
 
 #Preview {
     HomeView()
