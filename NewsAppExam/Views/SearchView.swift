@@ -5,132 +5,182 @@ struct SearchView: View {
     @State private var query = ""
     @State private var articles: [ArticleResponse] = []
     @State private var isLoading = false
-    @FocusState private var isSearchFieldFocused: Bool // Håndterer fokusstatus
+    @FocusState private var isSearchFieldFocused: Bool
 
-    // Bruk @Query for å hente tidligere søk automatisk
     @Query(sort: \Search.createdAt, order: .reverse) private var previousSearches: [Search]
+    @Environment(\.modelContext) private var context
+
+    @State private var showSearchCriteriaSheet = false
     
-    @Environment(\.modelContext) private var context // SwiftData-kontekst
+    @State private var sortBy: String = "relevancy"
+    @State private var language: String = ""
+    
+    //Satt den en måned tilbake for å gi bedre mening
+    @State private var fromDate: Date = Calendar.current.date(byAdding: .month, value: -1, to: Date()) ?? Date()
+    @State private var toDate: Date = Date()
+
 
     let apiService = APIService()
 
     var body: some View {
         NavigationStack {
             VStack {
-                // Søkefelt
-                TextField("Search news...", text: $query, onCommit: {
-                    performSearch()
-                })
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-                .focused($isSearchFieldFocused) // Binder fokusstatus
-                .overlay(
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.gray)
-                            .padding(.leading, 8)
-                        Spacer()
-                        if !query.isEmpty {
-                            Button(action: { query = "" }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.gray)
-                            }
-                            .padding(.trailing, 8)
-                        }
-                    }
-                )
-
-                // "Nylige søk"-seksjonen
-                if isSearchFieldFocused && !previousSearches.isEmpty {
-                    VStack(alignment: .leading) {
-                        Text("Nylige søk")
-                            .font(.headline)
-                            .padding(.horizontal)
-
-                        ScrollView {
-                            VStack(spacing: 0) {
-                                ForEach(previousSearches) { search in
-                                    HStack {
-                                        Text(search.keyword)
-                                            .foregroundColor(.primary)
-                                            .padding(.vertical, 8)
-                                        
-                                        Spacer()
-                                        
-                                        Button(action: {
-                                            deleteSearch(search)
-                                        }) {
-                                            Image(systemName: "xmark")
-                                                .foregroundColor(.red)
-                                        }
-                                    }
-                                    .padding(.horizontal)
-                                    .background(Color.gray.opacity(0.1))
-                                    .cornerRadius(8)
-                                    .padding(.vertical, 4)
-                                    .onTapGesture {
-                                        query = search.keyword
-                                        isSearchFieldFocused = false // Skjul listen når et søk velges
-                                        performSearch()
-                                    }
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                    .frame(maxHeight: 200) // Begrens høyden på listen
+                searchField
+                if isSearchFieldFocused {
+                    recentSearches
                 }
-
-                // Vis søkeresultater eller lastestatus
                 if isLoading {
                     ProgressView("Loading...")
                 } else {
-                    List(articles) { article in
-                        NavigationLink(destination: ArticleDetailView(apiArticle: article)) {
-                            HStack {
-                                // Bilde hvis tilgjengelig
-                                if let url = article.urlToImage, let imageURL = URL(string: url) {
-                                    AsyncImage(url: imageURL) { image in
-                                        image
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 50, height: 50)
-                                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                                    } placeholder: {
-                                        ProgressView()
+                    articleList
+                }
+            }
+            .navigationTitle("Search News")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showSearchCriteriaSheet = true
+                    }) {
+                        Image(systemName: "slider.horizontal.3")
+                            .imageScale(.large)
+                    }
+                    
+                }
+            }
+
+            .sheet(isPresented: $showSearchCriteriaSheet) {
+                SearchCriteriaSheet(
+                    sortBy: $sortBy,
+                    language: $language,
+                    fromDate: $fromDate,
+                    toDate: $toDate,
+                    onApply: performSearch,
+                    onReset: resetSearchCriteria
+                )
+            }
+        }
+    }
+}
+
+private extension SearchView {
+    // MARK: - Subviews
+
+    var searchField: some View {
+        TextField("Search news...", text: $query, onCommit: performSearch)
+            .textFieldStyle(RoundedBorderTextFieldStyle())
+            .padding()
+            .focused($isSearchFieldFocused)
+            .overlay(
+                HStack {
+                 
+                    Spacer()
+                    if !query.isEmpty {
+                        Button(action: { query = "" }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
+                        }
+                        .padding(.trailing, 8)
+                    }
+                }
+            )
+    }
+
+    var recentSearches: some View {
+        Group {
+            if previousSearches.isEmpty {
+                Text("No recent searches")
+                    .foregroundColor(.gray)
+                    .font(.subheadline)
+                    .padding(.horizontal)
+            } else {
+                VStack(alignment: .leading) {
+                    Text("Nylige søk")
+                        .font(.headline)
+                        .padding(.horizontal)
+
+                    ScrollView {
+                        VStack(spacing: 0) {
+                            ForEach(previousSearches) { search in
+                                HStack {
+                                    Text(search.keyword)
+                                        .foregroundColor(.primary)
+                                        .padding(.vertical, 8)
+
+                                    Spacer()
+
+                                    Button(action: {
+                                        deleteSearch(search)
+                                    }) {
+                                        Image(systemName: "xmark")
+                                            .foregroundColor(.red)
                                     }
                                 }
-                                
-                                // Tittel og kilde
-                                VStack(alignment: .leading) {
-                                    Text(article.title)
-                                        .font(.headline)
-                                    Text(article.source.name)
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
+                                .padding(.horizontal)
+                                .background(Color.gray.opacity(0.1))
+                                .cornerRadius(8)
+                                .padding(.vertical, 4)
+                                .onTapGesture {
+                                    query = search.keyword
+                                    isSearchFieldFocused = false
+                                    performSearch()
                                 }
                             }
                         }
                     }
+                    .padding(.horizontal)
                 }
+                .frame(maxHeight: 200)
             }
-            .navigationTitle("Search News")
         }
     }
-    
+
+
+    var articleList: some View {
+        List(articles) { article in
+            NavigationLink(destination: ArticleDetailView(apiArticle: article)) {
+                HStack {
+                    if let url = article.urlToImage, let imageURL = URL(string: url) {
+                        AsyncImage(url: imageURL) { image in
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 50, height: 50)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                        } placeholder: {
+                            ProgressView()
+                        }
+                    } else {
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.3))
+                            .frame(width: 50, height: 50)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
+
+                    VStack(alignment: .leading) {
+                        Text(article.title ?? "No title")
+                            .font(.headline)
+                        Text(article.source.name)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - Actions
+
     func performSearch() {
         Task {
             isLoading = true
-            articles = await apiService.fetchArticles(query: query)
+            articles = await apiService.fetchArticles(query: query, sortBy: sortBy, language: language, fromDate: fromDate, toDate: toDate)
             isLoading = false
-            
-            // Lagre søket hvis det er nytt
+
             saveSearch(keyword: query)
         }
     }
-    
+
     func saveSearch(keyword: String) {
-        // Sjekk om søket allerede finnes
         if !previousSearches.contains(where: { $0.keyword == keyword }) {
             let newSearch = Search(keyword: keyword)
             context.insert(newSearch)
@@ -141,9 +191,8 @@ struct SearchView: View {
             }
         }
     }
-    
+
     func deleteSearch(_ search: Search) {
-        // Slett søk fra databasen
         context.delete(search)
         do {
             try context.save()
@@ -151,8 +200,11 @@ struct SearchView: View {
             print("Error deleting search: \(error)")
         }
     }
-}
-
-#Preview {
-    SearchView()
+    
+    func resetSearchCriteria() {
+        sortBy = "relevancy"
+        language = ""
+        fromDate = Calendar.current.date(byAdding: .month, value: -1, to: Date()) ?? Date()
+        toDate = Date()
+    }
 }

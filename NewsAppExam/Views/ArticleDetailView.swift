@@ -103,7 +103,7 @@ struct ArticleDetailView: View {
         }
 
         let newArticle = Article(
-            title: apiArticle.title,
+            title: apiArticle.title!,
             description: apiArticle.description,
             source: apiArticle.source.name,
             url: apiArticle.url,

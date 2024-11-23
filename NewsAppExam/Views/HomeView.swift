@@ -58,12 +58,32 @@ struct HomeView: View {
         List {
             ForEach(filteredArticles) { article in
                 NavigationLink(destination: ArticleDetailView(article: article)) {
-                    VStack(alignment: .leading) {
-                        Text(article.title)
-                            .font(.headline)
-                        Text(article.category.name)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                    HStack{
+                        
+                        if let url = article.urlToImage, let imageURL = URL(string: url) {
+                            AsyncImage(url: imageURL) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 50, height: 50)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                            } placeholder: {
+                                ProgressView()
+                            }
+                        } else {
+                            Rectangle()
+                                .fill(Color.gray.opacity(0.3))
+                                .frame(width: 50, height: 50)
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                        }
+
+                        VStack(alignment: .leading) {
+                            Text(article.title)
+                                .font(.headline)
+                            Text(article.category.name)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
             }
