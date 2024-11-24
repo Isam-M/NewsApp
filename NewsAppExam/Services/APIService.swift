@@ -36,13 +36,49 @@ struct APIService {
             let (data, _) = try await session.data(for: request)
             let decoder = JSONDecoder()
             let newsResponse = try decoder.decode(NewsAPIResponse.self, from: data)
+            
             return newsResponse.articles
+            
         } catch {
             print("Error fetching articles: \(error)")
         }
 
         return []
     }
+    
+    func fetchTopHeadlines(country: String, category: String, pageSize: Int = 20) async -> [ArticleResponse] {
+        var urlString = "https://newsapi.org/v2/top-headlines?apiKey=\(apiKey)"
+        
+        if !country.isEmpty {
+            urlString += "&country=\(country)"
+        }
+        
+        if !category.isEmpty {
+            urlString += "&category=\(category)"
+        }
+        
+        urlString += "&pageSize=\(pageSize)"
+
+        guard let url = URL(string: urlString) else {
+            print("Error: Invalid URL")
+            return []
+        }
+
+        let request = URLRequest(url: url)
+        let session = URLSession.shared
+
+        do {
+            let (data, _) = try await session.data(for: request)
+            let decoder = JSONDecoder()
+            let newsResponse = try decoder.decode(NewsAPIResponse.self, from: data)
+            return newsResponse.articles
+        } catch {
+            print("Error fetching top headlines: \(error)")
+        }
+
+        return []
+    }
+
 
 }
 

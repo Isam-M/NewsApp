@@ -13,23 +13,69 @@ struct HomeView: View {
     @Query private var categories: [Category]
     @State private var selectedCategory: Category?
     @Environment(\.modelContext) private var context
-    
-    var body: some View {
-        NavigationStack {
-            VStack {
-                if filteredArticles.isEmpty {
-                    emptyStateView
-                } else {
-                    articleListView
-                }
-            }
-            .navigationTitle("My Articles")
-            .toolbar {
-                categoryPickerToolbar
-            }
-        }
-    }
-    
+
+    @AppStorage("tickerPosition") private var tickerPosition: String = "top" // Lagret posisjon
+      @AppStorage("isTickerEnabled") private var isTickerEnabled: Bool = true // Aktivert/deaktivert ticker
+      @State private var headlines: [String] = [] // Nyhetsoverskrifter
+
+      let apiService = APIService()
+
+      var body: some View {
+          NavigationStack {
+              VStack {
+                  // Top ticker
+                  if isTickerEnabled && tickerPosition == "top" {
+                      if headlines.isEmpty {
+                          Text("Loading headlines...")
+                              .foregroundColor(.gray)
+                              .frame(height: 50)
+                      } else {
+                          NewsTickerView(headlines: headlines, duration: 20)
+                      }
+                  }
+
+                  if filteredArticles.isEmpty {
+                      emptyStateView
+                  } else {
+                      articleListView
+                  }
+
+                  // Bottom ticker
+                  if isTickerEnabled && tickerPosition == "bottom" {
+                      if headlines.isEmpty {
+                          Text("Loading headlines...")
+                              .foregroundColor(.gray)
+                              .frame(height: 50)
+                      } else {
+                          NewsTickerView(headlines: headlines, duration: 20)
+                      }
+                  }
+              }
+            
+              .toolbar {
+                  categoryPickerToolbar
+              }
+              .onAppear {
+                  fetchTopHeadlines()
+              }
+          }
+      }
+
+      private func fetchTopHeadlines() {
+          Task {
+              let articles = await apiService.fetchTopHeadlines(country: "us", category: "general", pageSize: 10)
+              headlines = articles.compactMap { $0.title }
+
+              if headlines.isEmpty {
+                  print("No headlines found")
+              } else {
+                  print("Headlines loaded: \(headlines)")
+              }
+          }
+      }
+
+
+
     
     private var filteredArticles: [Article] {
         if let selectedCategory = selectedCategory {

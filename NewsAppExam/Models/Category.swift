@@ -13,10 +13,10 @@ class Category: Identifiable {
     }
 
     static func defaultCategories(context: ModelContext) {
-        // Hent alle eksisterende kategorier fra databasen
+        
         let existingCategories = try? context.fetch(FetchDescriptor<Category>())
 
-        // Hvis det ikke finnes noen kategorier, legg til standardkategorier
+        
         if existingCategories?.isEmpty ?? true {
             let initialCategories = ["General", "Technology", "Health", "Sports", "Business"]
             for name in initialCategories {

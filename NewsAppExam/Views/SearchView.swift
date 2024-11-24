@@ -15,7 +15,7 @@ struct SearchView: View {
     @State private var sortBy: String = "relevancy"
     @State private var language: String = ""
     
-    //Satt den en måned tilbake for å gi bedre mening
+    //Satt den en måned tilbake pga gratis versjon
     @State private var fromDate: Date = Calendar.current.date(byAdding: .month, value: -1, to: Date()) ?? Date()
     @State private var toDate: Date = Date()
 
