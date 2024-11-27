@@ -7,31 +7,28 @@
 
 import SwiftUI
 
-
-
 struct SetupView: View {
-    @AppStorage("tickerPosition") private var tickerPosition: String = "top"
-    @AppStorage("isTickerEnabled") private var isTickerEnabled: Bool = true
+    @AppStorage("isDarkMode") private var isDarkMode: Bool = false
 
     var body: some View {
         NavigationStack {
             List {
                 Section(header: Text("News Ticker Settings")) {
-                    Toggle("Enable Ticker", isOn: $isTickerEnabled)
-
-                    Picker("Ticker Position", selection: $tickerPosition) {
-                        Text("Top").tag("top")
-                        Text("Bottom").tag("bottom")
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
+                    NavigationLink("Edit News Ticker Settings", destination: NewsTickerSettingsView())
                 }
-
                 Section(header: Text("Manage Content")) {
                     NavigationLink("Manage Categories", destination: CategoryManagerView())
                     NavigationLink("View Archived Articles", destination: ArchivedArticlesView())
                 }
+                Section(header: Text("API Key")) {
+                    NavigationLink("Set API Key", destination: APIKeySettingsView())
+                }
+                Section(header: Text("Appearance")) {
+                    Toggle("Dark Mode", isOn: $isDarkMode)
+                }
             }
             .navigationTitle("Setup")
+            .preferredColorScheme(isDarkMode ? .dark : .light)
         }
     }
 }
@@ -39,3 +36,4 @@ struct SetupView: View {
 #Preview {
     SetupView()
 }
+

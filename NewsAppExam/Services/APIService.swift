@@ -9,9 +9,16 @@
 import Foundation
 
 struct APIService {
-    private let apiKey = "9be243a1a16d4e199359a387e3e9cf24"
+    private var apiKey: String {
+        UserDefaults.standard.string(forKey: "apiKey") ?? "9be243a1a16d4e199359a387e3e9cf24"
+    }
 
     func fetchArticles(query: String, sortBy: String, language: String, fromDate: Date, toDate: Date) async -> [ArticleResponse] {
+        guard !apiKey.isEmpty else {
+            print("Error: No API Key found")
+            return []
+        }
+
         let formatter = ISO8601DateFormatter()
         let fromDateString = formatter.string(from: fromDate)
         let toDateString = formatter.string(from: toDate)
@@ -45,6 +52,7 @@ struct APIService {
 
         return []
     }
+
     
     func fetchTopHeadlines(country: String, category: String, pageSize: Int = 20) async -> [ArticleResponse] {
         var urlString = "https://newsapi.org/v2/top-headlines?apiKey=\(apiKey)"

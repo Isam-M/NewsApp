@@ -1,9 +1,4 @@
-//
-//  HomeView.swift
-//  NewsAppExam
-//
-//  Created by Isam Melioui on 20/11/2024.
-//
+// HomeView.swift
 
 import SwiftUI
 import SwiftData
@@ -14,69 +9,83 @@ struct HomeView: View {
     @State private var selectedCategory: Category?
     @Environment(\.modelContext) private var context
 
-    @AppStorage("tickerPosition") private var tickerPosition: String = "top" // Lagret posisjon
-      @AppStorage("isTickerEnabled") private var isTickerEnabled: Bool = true // Aktivert/deaktivert ticker
-      @State private var headlines: [String] = [] // Nyhetsoverskrifter
-
-      let apiService = APIService()
-
-      var body: some View {
-          NavigationStack {
-              VStack {
-                  // Top ticker
-                  if isTickerEnabled && tickerPosition == "top" {
-                      if headlines.isEmpty {
-                          Text("Loading headlines...")
-                              .foregroundColor(.gray)
-                              .frame(height: 50)
-                      } else {
-                          NewsTickerView(headlines: headlines, duration: 20)
-                      }
-                  }
-
-                  if filteredArticles.isEmpty {
-                      emptyStateView
-                  } else {
-                      articleListView
-                  }
-
-                  // Bottom ticker
-                  if isTickerEnabled && tickerPosition == "bottom" {
-                      if headlines.isEmpty {
-                          Text("Loading headlines...")
-                              .foregroundColor(.gray)
-                              .frame(height: 50)
-                      } else {
-                          NewsTickerView(headlines: headlines, duration: 20)
-                      }
-                  }
-              }
-            
-              .toolbar {
-                  categoryPickerToolbar
-              }
-              .onAppear {
-                  fetchTopHeadlines()
-              }
-          }
-      }
-
-      private func fetchTopHeadlines() {
-          Task {
-              let articles = await apiService.fetchTopHeadlines(country: "us", category: "general", pageSize: 10)
-              headlines = articles.compactMap { $0.title }
-
-              if headlines.isEmpty {
-                  print("No headlines found")
-              } else {
-                  print("Headlines loaded: \(headlines)")
-              }
-          }
-      }
-
-
-
+    @AppStorage("tickerPosition") private var tickerPosition: String = "top"
+    @AppStorage("isTickerEnabled") private var isTickerEnabled: Bool = true
+    @AppStorage("tickerNewsCount") private var tickerNewsCount: Int = 5
+    @State private var headlines: [String] = []
     
+    @AppStorage("isDarkMode") private var isDarkMode: Bool = false
+
+    let apiService = APIService()
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+               
+                if isTickerEnabled && tickerPosition == "top" {
+                    tickerView
+                }
+
+                if filteredArticles.isEmpty {
+                    Spacer()
+                    emptyStateView
+                    Spacer()
+                } else {
+                    articleListView
+                }
+
+                
+                if isTickerEnabled && tickerPosition == "bottom" {
+                    tickerView
+                }
+            }
+            .preferredColorScheme(isDarkMode ? .dark : .light)
+          
+            .toolbar {
+                categoryPickerToolbar
+            }
+            .onAppear {
+                fetchTopHeadlines()
+            }
+        }
+    }
+
+    private var tickerView: some View {
+        Group {
+            if headlines.isEmpty {
+                Text("Loading headlines...")
+                    .foregroundColor(.gray)
+                    .frame(height: 50)
+            } else {
+                NewsTickerView(headlines: headlines)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .background(Color(.systemGray6))
+    }
+
+    private func fetchTopHeadlines() {
+        Task {
+            let pageSize = UserDefaults.standard.integer(forKey: "tickerNewsCount")
+            let validPageSize = pageSize > 0 ? pageSize : 5
+
+            print("Fetching \(validPageSize) headlines")
+
+            // Tøm eksisterende headlines før oppdatering
+            headlines = []
+
+            let articles = await apiService.fetchTopHeadlines(country: "us", category: "general", pageSize: validPageSize)
+            headlines = articles.compactMap { $0.title }
+
+            if headlines.isEmpty {
+                print("No headlines found")
+            } else {
+                print("Headlines loaded: \(headlines)")
+            }
+        }
+    }
+
+
     private var filteredArticles: [Article] {
         if let selectedCategory = selectedCategory {
             return articles.filter { $0.category == selectedCategory && !$0.isArchived }
@@ -84,8 +93,7 @@ struct HomeView: View {
             return articles.filter { !$0.isArchived }
         }
     }
-    
-    
+
     private var emptyStateView: some View {
         VStack {
             Image(systemName: "book.closed")
@@ -98,14 +106,12 @@ struct HomeView: View {
                 .font(.headline)
         }
     }
-    
-    
+
     private var articleListView: some View {
         List {
             ForEach(filteredArticles) { article in
                 NavigationLink(destination: ArticleDetailView(article: article)) {
-                    HStack{
-                        
+                    HStack {
                         if let url = article.urlToImage, let imageURL = URL(string: url) {
                             AsyncImage(url: imageURL) { image in
                                 image
@@ -136,8 +142,7 @@ struct HomeView: View {
             .onDelete(perform: archiveArticle)
         }
     }
-    
-    
+
     private var categoryPickerToolbar: some ToolbarContent {
         ToolbarItem(placement: .navigationBarTrailing) {
             Menu {
@@ -155,8 +160,6 @@ struct HomeView: View {
         }
     }
 
-
-    
     private func archiveArticle(at offsets: IndexSet) {
         for index in offsets {
             let article = filteredArticles[index]
@@ -164,9 +167,4 @@ struct HomeView: View {
         }
         try? context.save()
     }
-}
-    
-
-#Preview {
-    HomeView()
 }

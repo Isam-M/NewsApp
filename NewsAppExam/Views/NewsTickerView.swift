@@ -2,34 +2,56 @@ import SwiftUI
 
 struct NewsTickerView: View {
     let headlines: [String]
-    let duration: Double
 
-    @State private var offsetX: CGFloat = UIScreen.main.bounds.width
+    @AppStorage("tickerFontSize") private var tickerFontSizeValue: Double = 16
+    //Måtte ha string pga appstorage
+    @AppStorage("tickerTextColor") private var tickerTextColorHex: String = "#000000"
 
-    var body: some View {
-        GeometryReader { geometry in
-            HStack(spacing: 50) { // Bruker spacing for å separere titlene
-                ForEach(headlines, id: \.self) { headline in
-                    Text(headline)
-                        .font(.headline)
-                        .foregroundColor(.primary)
-                        .lineLimit(1) // Sørger for én linje
-                        .fixedSize(horizontal: true, vertical: false) // Unngår tekstklipping
-                }
-            }
-            .offset(x: offsetX)
-            .onAppear {
-                startAnimation(geometry: geometry)
-            }
-        }
-        .frame(height: 50) // Fast høyde for tickeren
+    private var tickerFontSize: CGFloat {
+        CGFloat(tickerFontSizeValue)
     }
 
-    private func startAnimation(geometry: GeometryProxy) {
-        let totalWidth = geometry.size.width + CGFloat(headlines.count) * geometry.size.width / 3 // Tilpass til antall overskrifter
-        offsetX = geometry.size.width
-        withAnimation(Animation.linear(duration: duration).repeatForever(autoreverses: false)) {
-            offsetX = -totalWidth // Flytt gjennom alle overskrifter
+    private var tickerTextColor: Color {
+        Color(hex: tickerTextColorHex) ?? .primary
+    }
+
+    @State private var offsetX: CGFloat = UIScreen.main.bounds.width
+    private let scrollSpeed: CGFloat = 80
+ 
+    var body: some View {
+        GeometryReader { geometry in
+            HStack(spacing: 50) {
+                ForEach(headlines, id: \.self) { headline in
+                    Text(headline)
+                        .font(.system(size: tickerFontSize))
+                        .foregroundColor(tickerTextColor)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                }
+            }
+            .frame(width: geometry.size.width * CGFloat(headlines.count + 1))
+            .offset(x: offsetX)
+            .onAppear {
+                startAnimation(screenWidth: geometry.size.width)
+            }
+            .padding(.vertical, 10)
+            .padding(.horizontal, 15)
+            .background(
+                RoundedRectangle(cornerRadius: 0)
+                    .fill(Color(UIColor.systemBackground))
+                    .shadow(color: Color(UIColor.label).opacity(0.2), radius: 6, x: 2, y: 2)
+            )
+        }
+        .frame(height: 50)
+    }
+
+    private func startAnimation(screenWidth: CGFloat) {
+        offsetX = screenWidth
+        let totalWidth = screenWidth * CGFloat(headlines.count + 2)
+        let animationDuration = totalWidth / scrollSpeed
+
+        withAnimation(Animation.linear(duration: animationDuration).repeatForever(autoreverses: false)) {
+            offsetX = -totalWidth
         }
     }
 }
