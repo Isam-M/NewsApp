@@ -1,5 +1,3 @@
-// HomeView.swift
-
 import SwiftUI
 import SwiftData
 
@@ -13,39 +11,50 @@ struct HomeView: View {
     @AppStorage("isTickerEnabled") private var isTickerEnabled: Bool = true
     @AppStorage("tickerNewsCount") private var tickerNewsCount: Int = 5
     @State private var headlines: [String] = []
-    
+    @State private var enlargedHeadline: String? = nil
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false
 
     let apiService = APIService()
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-               
-                if isTickerEnabled && tickerPosition == "top" {
-                    tickerView
-                }
+        ZStack {
+            NavigationStack {
+                VStack(spacing: 0) {
+                    if isTickerEnabled && tickerPosition == "top" {
+                        tickerView
+                    }
 
-                if filteredArticles.isEmpty {
-                    Spacer()
-                    emptyStateView
-                    Spacer()
-                } else {
-                    articleListView
-                }
+                    if filteredArticles.isEmpty {
+                        Spacer()
+                        emptyStateView
+                        Spacer()
+                    } else {
+                        articleListView
+                    }
 
-                
-                if isTickerEnabled && tickerPosition == "bottom" {
-                    tickerView
+                    if isTickerEnabled && tickerPosition == "bottom" {
+                        tickerView
+                    }
+                }
+                .preferredColorScheme(isDarkMode ? .dark : .light)
+                .toolbar(content: categoryPickerToolbar)
+                .onAppear {
+                    fetchTopHeadlines()
                 }
             }
-            .preferredColorScheme(isDarkMode ? .dark : .light)
-          
-            .toolbar {
-                categoryPickerToolbar
-            }
-            .onAppear {
-                fetchTopHeadlines()
+
+            
+            if let enlargedHeadline = enlargedHeadline {
+                Text(enlargedHeadline)
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.blue.opacity(0.9))
+                    .cornerRadius(12)
+                    .shadow(radius: 10)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
     }
@@ -57,7 +66,7 @@ struct HomeView: View {
                     .foregroundColor(.gray)
                     .frame(height: 50)
             } else {
-                NewsTickerView(headlines: headlines)
+                NewsTickerView(headlines: headlines, enlargedHeadline: $enlargedHeadline)
             }
         }
         .frame(maxWidth: .infinity)
@@ -67,14 +76,13 @@ struct HomeView: View {
     private func fetchTopHeadlines() {
         Task {
             let pageSize = UserDefaults.standard.integer(forKey: "tickerNewsCount")
-            let validPageSize = pageSize > 0 ? pageSize : 5
+            let headlinesCount = pageSize > 0 ? pageSize : 5
 
-            print("Fetching \(validPageSize) headlines")
+            print("Fetching \(headlinesCount) headlines")
 
-            // Tøm eksisterende headlines før oppdatering
             headlines = []
 
-            let articles = await apiService.fetchTopHeadlines(country: "us", category: "general", pageSize: validPageSize)
+            let articles = await apiService.fetchTopHeadlines(country: "us", category: "general", pageSize: headlinesCount)
             headlines = articles.compactMap { $0.title }
 
             if headlines.isEmpty {
@@ -84,7 +92,6 @@ struct HomeView: View {
             }
         }
     }
-
 
     private var filteredArticles: [Article] {
         if let selectedCategory = selectedCategory {
@@ -143,7 +150,15 @@ struct HomeView: View {
         }
     }
 
-    private var categoryPickerToolbar: some ToolbarContent {
+    private func archiveArticle(at offsets: IndexSet) {
+        for index in offsets {
+            let article = filteredArticles[index]
+            article.isArchived = true
+        }
+        try? context.save()
+    }
+
+    private func categoryPickerToolbar() -> some ToolbarContent {
         ToolbarItem(placement: .navigationBarTrailing) {
             Menu {
                 Picker("Select Category", selection: $selectedCategory) {
@@ -158,13 +173,5 @@ struct HomeView: View {
                     .foregroundColor(.blue)
             }
         }
-    }
-
-    private func archiveArticle(at offsets: IndexSet) {
-        for index in offsets {
-            let article = filteredArticles[index]
-            article.isArchived = true
-        }
-        try? context.save()
     }
 }
