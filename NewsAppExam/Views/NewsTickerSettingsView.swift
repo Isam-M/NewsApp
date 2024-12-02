@@ -1,12 +1,17 @@
 import SwiftUI
 
+
+
 struct NewsTickerSettingsView: View {
     @AppStorage("tickerPosition") private var tickerPosition: String = "top"
     @AppStorage("isTickerEnabled") private var isTickerEnabled: Bool = true
     @AppStorage("tickerNewsCount") private var tickerNewsCount: Int = 5
     @AppStorage("tickerFontSize") private var tickerFontSizeValue: Double = 16
     @AppStorage("tickerTextColor") private var tickerTextColorHex: String = "#000000"
+    @AppStorage("tickerCountry") private var tickerCountry: String = "us"
+    @AppStorage("tickerCategory") private var tickerCategory: String = "general"
     
+    @State private var showAlert: Bool = false
     
     var body: some View {
         Form {
@@ -20,26 +25,52 @@ struct NewsTickerSettingsView: View {
                 .pickerStyle(SegmentedPickerStyle())
                 
                 Stepper("News Count: \(tickerNewsCount)", value: $tickerNewsCount, in: 1...20)
+                
+                Picker("Country", selection: $tickerCountry) {
+                    Text("United States").tag("us")
+                    Text("Norway").tag("no")
+                    Text("France").tag("fr")
+                }
+                .pickerStyle(MenuPickerStyle())
+                .onChange(of: tickerCountry) {
+                    if tickerCountry != "us" {
+                        showAlert = true
+                    }
+                }
+                
+                Picker("Category", selection: $tickerCategory) {
+                    Text("General").tag("general")
+                    Text("Business").tag("business")
+                    Text("Entertainment").tag("entertainment")
+                    Text("Health").tag("health")
+                    Text("Science").tag("science")
+                    Text("Sports").tag("sports")
+                    Text("Technology").tag("technology")
+                }
+                .pickerStyle(MenuPickerStyle())
             }
             
-           
-                Section(header: Text("Font Size")) {
-                    Slider(value: $tickerFontSizeValue, in: 10...30, step: 1) {
-                        Text("Font Size")
-                    }
-                    Text("Font Size: \(Int(tickerFontSizeValue))")
-                        .font(.system(size: CGFloat(tickerFontSizeValue)))
+            Section(header: Text("Font Size")) {
+                Slider(value: $tickerFontSizeValue, in: 10...30, step: 1) {
+                    Text("Font Size")
                 }
-                 
-                Section(header: Text("Text Color")) {
-                    ColorPicker("Pick Text Color", selection: Binding(
-                        get: { Color(hex: tickerTextColorHex) ?? .primary },
-                        set: { newColor in tickerTextColorHex = newColor.hex }
-                    ))
-                }
+                Text("Font Size: \(Int(tickerFontSizeValue))")
+                    .font(.system(size: CGFloat(tickerFontSizeValue)))
+            }
             
-            .navigationTitle("News Ticker Settings")
+            Section(header: Text("Text Color")) {
+                ColorPicker("Pick Text Color", selection: Binding(
+                    get: { Color(hex: tickerTextColorHex) ?? .primary },
+                    set: { newColor in tickerTextColorHex = newColor.hex }
+                ))
+            }
         }
+        .alert("Country Not Supported", isPresented: $showAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Currently, the API only supports 'United States'. Other countries will not display any headlines.")
+        }
+        .navigationTitle("News Ticker Settings")
     }
 }
 

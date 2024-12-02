@@ -1,4 +1,5 @@
 import SwiftUI
+
 struct NewsTickerView: View {
     let headlines: [String]
     @Binding var enlargedHeadline: String?
@@ -14,68 +15,73 @@ struct NewsTickerView: View {
     }
 
     @State private var offsetX: CGFloat = 0
-    private let scrollSpeed: CGFloat = 100 // Adjust speed here
+    @State private var isAnimating: Bool = false
     @State private var contentWidth: CGFloat = 0
-    @State private var timer: Timer?
+
+    private let tickerSpeed: CGFloat = 100
+    private let tickerHeight: CGFloat = 50
+    private let headlineSpacing: CGFloat = 50
 
     var body: some View {
         GeometryReader { geometry in
-            ZStack {
-                // Ticker Content
-                HStack(spacing: 50) {
-                    ForEach(0..<2) { _ in
-                        ForEach(headlines, id: \.self) { headline in
-                            Text(headline)
-                                .font(.system(size: tickerFontSize))
-                                .foregroundColor(tickerTextColor)
-                                .lineLimit(1)
-                                .fixedSize(horizontal: true, vertical: false)
-                                .onTapGesture {
-                                    print("Tapped headline: \(headline)")
-                                    enlargedHeadline = headline
-
-                                    // Forsinkelse før den går tilbake
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                                        if enlargedHeadline == headline {
-                                            enlargedHeadline = nil
-                                        }
-                                    }
-                                }
+            HStack(spacing: headlineSpacing) {
+                ForEach(headlines, id: \.self) { headline in
+                    Text(headline)
+                        .font(.system(size: tickerFontSize))
+                        .foregroundColor(tickerTextColor)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .onTapGesture {
+                            handleHeadlineTap(headline)
                         }
-                    }
-                }
-                .background(
-                    GeometryReader { geo in
-                        Color.clear
-                            .onAppear {
-                                contentWidth = geo.size.width / 2
-                            }
-                    }
-                )
-                .offset(x: offsetX)
-                .onAppear {
-                    startScrolling()
-                }
-                .onDisappear {
-                    stopScrolling()
                 }
             }
+            .background(
+                GeometryReader { geo in
+                    Color.clear // trengte denne for å legge til onAppear
+                        .onAppear {
+                            contentWidth = geo.size.width
+                        }
+                }
+            )
+            .offset(x: offsetX)
+            .onAppear {
+                startTickerAnimation(geometry.size.width)
+            }
         }
-        .frame(height: 50)
+        .frame(height: tickerHeight)
     }
 
-    func startScrolling() {
-        stopScrolling() // Ensure any existing timer is invalidated
-        timer = Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true) { _ in
-            offsetX -= scrollSpeed * 0.02
-            if abs(offsetX) >= contentWidth {
-                offsetX = 0
+    private func startTickerAnimation(_ frameWidth: CGFloat) {
+        guard !isAnimating else { return }
+        isAnimating = true
+        offsetX = frameWidth
+
+        animateScrolling(totalWidth: frameWidth)
+    }
+
+    private func animateScrolling(totalWidth: CGFloat) {
+        let duration = Double((contentWidth + totalWidth) / tickerSpeed)
+
+        withAnimation(Animation.linear(duration: duration)) {
+            offsetX = -contentWidth
+        }
+
+        //Får animasjonen til å starte på nytt når den er ferdig for å virke som evig loop
+        DispatchQueue.main.asyncAfter(deadline: .now() + duration) {
+            if isAnimating {
+                offsetX = totalWidth
+                animateScrolling(totalWidth: totalWidth)
             }
         }
     }
 
-    func stopScrolling() {
-        timer?.invalidate()
-        timer = nil
+    private func handleHeadlineTap(_ headline: String) {
+        enlargedHeadline = headline
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            if enlargedHeadline == headline {
+                enlargedHeadline = nil
+            }
+        }
     }
 }

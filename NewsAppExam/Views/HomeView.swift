@@ -10,8 +10,12 @@ struct HomeView: View {
     @AppStorage("tickerPosition") private var tickerPosition: String = "top"
     @AppStorage("isTickerEnabled") private var isTickerEnabled: Bool = true
     @AppStorage("tickerNewsCount") private var tickerNewsCount: Int = 5
+    @AppStorage("tickerCountry") private var tickerCountry: String = "us"
+    @AppStorage("tickerCategory") private var tickerCategory: String = "general"
+
     @State private var headlines: [String] = []
     @State private var enlargedHeadline: String? = nil
+    
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false
 
     let apiService = APIService()
@@ -46,16 +50,17 @@ struct HomeView: View {
             
             if let enlargedHeadline = enlargedHeadline {
                 Text(enlargedHeadline)
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+                    .font(.title)
+                    .fontWeight(.semibold)
                     .foregroundColor(.white)
                     .padding()
-                    .background(Color.blue.opacity(0.9))
-                    .cornerRadius(12)
-                    .shadow(radius: 10)
+                    .background(Color.indigo)
+                    .cornerRadius(15)
+                    .shadow(radius: 8)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+
         }
     }
 
@@ -82,7 +87,7 @@ struct HomeView: View {
 
             headlines = []
 
-            let articles = await apiService.fetchTopHeadlines(country: "us", category: "general", pageSize: headlinesCount)
+            let articles = await apiService.fetchTopHeadlines(country: tickerCountry, category: tickerCategory, pageSize: headlinesCount)
             headlines = articles.compactMap { $0.title }
 
             if headlines.isEmpty {
