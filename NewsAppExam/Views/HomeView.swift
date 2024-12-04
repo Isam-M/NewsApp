@@ -80,13 +80,14 @@ struct HomeView: View {
 
     private func fetchTopHeadlines() {
         Task {
-            let pageSize = UserDefaults.standard.integer(forKey: "tickerNewsCount")
-            let headlinesCount = pageSize > 0 ? pageSize : 5
+            let headlinesCount = UserDefaults.standard.integer(forKey: "tickerNewsCount")
+            
 
             print("Fetching \(headlinesCount) headlines")
 
             headlines = []
-
+            
+        
             let articles = await apiService.fetchTopHeadlines(country: tickerCountry, category: tickerCategory, pageSize: headlinesCount)
             headlines = articles.compactMap { $0.title }
 

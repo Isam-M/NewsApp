@@ -44,7 +44,7 @@ struct NewsTickerView: View {
                         }
                 }
             )
-            .offset(x: offsetX) 
+            .offset(x: offsetX)
             .onAppear {
                 startTickerAnimation(geometry.size.width)
             }

@@ -1,16 +1,34 @@
 import Foundation
 import SwiftData
 
+
 @Model
 class Category: Identifiable {
     @Attribute(.unique) var id: UUID
     var name: String
-    var articles: [Article] = [] 
+    var articles: [Article] = []
+    var createdAt: Date
+    var updatedAt: Date
+    var notes: String
 
-    init(name: String) {
+    init(name: String, notes: String = "") {
         self.id = UUID()
         self.name = name
+        self.createdAt = Date()
+        self.updatedAt = Date()
+        self.notes = notes
     }
+
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case articles
+        case createdAt
+        case updatedAt
+        case notes
+    }
+
 
     static func defaultCategories(context: ModelContext) {
         
@@ -34,6 +52,7 @@ class Category: Identifiable {
 
 }
 
+// La til denne for å ikke få error når man sletter en kategori som allerede har artikler i seg
 extension Category {
     static func uncategorizedCategory(context: ModelContext) -> Category {
         let fetchRequest = FetchDescriptor<Category>(predicate: #Predicate { $0.name == "Uncategorized" })

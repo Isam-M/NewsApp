@@ -113,6 +113,10 @@ struct ArticleDetailView: View {
             category: selectedCategory,
             notes: notes
         )
+        newArticle.createdAt = Date()
+        newArticle.updatedAt = Date()
+
+        print("Created at: \(newArticle.createdAt)")
 
         context.insert(newArticle)
 
