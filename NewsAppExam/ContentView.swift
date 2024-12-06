@@ -6,13 +6,32 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct ContentView: View {
- 
+    @State private var showSplash = true
 
     var body: some View {
-        TabView{
+        Group {
+            if showSplash {
+                SplashScreenView()
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            withAnimation {
+                                showSplash = false
+                            }
+                        }
+                    }
+            } else {
+                MainContentView()
+            }
+        }
+    }
+}
+
+// Hovedinnholdet i appen etter Splash Screen
+struct MainContentView: View {
+    var body: some View {
+        TabView {
             HomeView()
                 .tabItem {
                     Label("My Articles", systemImage: "book")
@@ -25,8 +44,6 @@ struct ContentView: View {
                 .tabItem {
                     Label("Setup", systemImage: "gear")
                 }
-           
-            
         }
     }
 }
