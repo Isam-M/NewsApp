@@ -1,9 +1,9 @@
-//
-//  Country.swift
-//  NewsAppExam
-//
-//  Created by Isam Melioui on 20/11/2024.
-//
+
+
+
+
+
+
 
 
 import Foundation
@@ -11,7 +11,7 @@ import SwiftData
 
 @Model
 class Country: Identifiable {
-    @Attribute(.unique) var id: UUID
+    var id: UUID
     var name: String
     var code: String
     var articles: [Article] = [] 
@@ -29,14 +29,6 @@ class Country: Identifiable {
     }
 
     
-    enum CodingKeys: String, CodingKey {
-        case id
-        case name
-        case code
-        case articles
-        case createdAt
-        case updatedAt
-        case notes
-    }
+
 }
 

@@ -1,9 +1,7 @@
-//
-//  CategoryManagerView.swift
-//  NewsAppExam
-//
-//  Created by Isam Melioui on 20/11/2024.
-//
+
+
+
+
 
 
 import SwiftUI
@@ -18,7 +16,7 @@ struct CategoryManagerView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                // Liste over eksisterende kategorier
+                
                 List {
                     ForEach(categories) { category in
                         HStack {
@@ -36,7 +34,7 @@ struct CategoryManagerView: View {
                 }
 
 
-                // Legg til ny kategori
+                
                 HStack {
                     TextField("New category name", text: $newCategoryName)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -57,6 +55,7 @@ struct CategoryManagerView: View {
         do {
             try context.save()
             newCategoryName = ""
+            print("Category created at: \(newCategory.createdAt)")
         } catch {
             print("Failed to add category: \(error)")
         }
@@ -65,18 +64,18 @@ struct CategoryManagerView: View {
     private func deleteCategory(_ category: Category) {
         let uncategorized = Category.uncategorizedCategory(context: context)
         
-        // Forhindre sletting av "Uncategorized"
+        
         guard category != uncategorized else {
             print("Cannot delete the Uncategorized category")
             return
         }
 
-        // Flytt artikler til "Uncategorized"
+        
         for article in articles where article.category == category {
             article.category = uncategorized
         }
 
-        // Slett kategorien
+        
         context.delete(category)
         do {
             try context.save()

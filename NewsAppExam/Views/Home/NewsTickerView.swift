@@ -31,8 +31,10 @@ struct NewsTickerView: View {
                         .foregroundColor(tickerTextColor)
                         .lineLimit(1)
                         .fixedSize(horizontal: true, vertical: false)
+                        .contentShape(Rectangle())
                         .onTapGesture {
                             handleHeadlineTap(headline)
+                            print("tapped headline")
                         }
                 }
             }

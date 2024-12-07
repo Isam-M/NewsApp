@@ -1,9 +1,4 @@
-//
-//  ContentView.swift
-//  NewsAppExam
-//
-//  Created by Isam Melioui on 20/11/2024.
-//
+
 
 import SwiftUI
 
@@ -28,7 +23,7 @@ struct ContentView: View {
     }
 }
 
-// Hovedinnholdet i appen etter Splash Screen
+
 struct MainContentView: View {
     var body: some View {
         TabView {

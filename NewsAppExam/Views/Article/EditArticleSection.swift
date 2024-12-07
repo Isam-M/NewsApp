@@ -1,9 +1,7 @@
-//
-//  EditArticleSection.swift
-//  NewsAppExam
-//
-//  Created by Isam Melioui on 21/11/2024.
-//
+
+
+
+
 
 
 import SwiftUI
@@ -19,7 +17,7 @@ struct EditArticleSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Rediger kategori
+            
             HStack {
                 if isEditingCategory {
                     Picker("Category", selection: $selectedCategory) {
@@ -39,7 +37,7 @@ struct EditArticleSection: View {
                 }
             }
 
-            // Rediger notater
+            
             HStack {
                 if isEditingNotes {
                     TextField("Update notes...", text: $notes)
@@ -59,7 +57,7 @@ struct EditArticleSection: View {
                 }
             }
 
-            // Lagre endringer
+            
             if isEditingCategory || isEditingNotes {
                 Button(action: onSave) {
                     Text("Save Changes")

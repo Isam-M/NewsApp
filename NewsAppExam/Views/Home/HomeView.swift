@@ -81,13 +81,10 @@ struct HomeView: View {
     private func fetchTopHeadlines() {
         Task {
             let headlinesCount = UserDefaults.standard.integer(forKey: "tickerNewsCount")
-            
-
             print("Fetching \(headlinesCount) headlines")
 
             headlines = []
             
-        
             let articles = await apiService.fetchTopHeadlines(country: tickerCountry, category: tickerCategory, pageSize: headlinesCount)
             headlines = articles.compactMap { $0.title }
 
@@ -117,6 +114,10 @@ struct HomeView: View {
             Text("No articles found")
                 .foregroundColor(.gray)
                 .font(.headline)
+            Text("Go on and search for some news!")
+                .foregroundColor(.gray)
+                .font(.headline)
+            
         }
     }
 

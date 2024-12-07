@@ -1,9 +1,7 @@
-//
-//  SetupView.swift
-//  NewsAppExam
-//
-//  Created by Isam Melioui on 20/11/2024.
-//
+
+
+
+
 
 import SwiftUI
 

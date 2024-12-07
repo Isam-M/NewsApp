@@ -63,7 +63,7 @@ struct SearchView: View {
 }
 
 private extension SearchView {
-    // MARK: - Subviews
+    
 
     var searchField: some View {
         TextField("Search news...", text: $query, onCommit: performSearch)
@@ -168,7 +168,7 @@ private extension SearchView {
         }
     }
 
-    // MARK: - Actions
+    
 
     func performSearch() {
         Task {
@@ -186,6 +186,7 @@ private extension SearchView {
             context.insert(newSearch)
             do {
                 try context.save()
+                print("Search saved at: \(newSearch.createdAt)")
             } catch {
                 print("Error saving search: \(error)")
             }

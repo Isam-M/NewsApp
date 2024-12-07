@@ -4,7 +4,7 @@ import SwiftData
 
 @Model
 class Category: Identifiable {
-    @Attribute(.unique) var id: UUID
+    var id: UUID
     var name: String
     var articles: [Article] = []
     var createdAt: Date
@@ -18,17 +18,9 @@ class Category: Identifiable {
         self.updatedAt = Date()
         self.notes = notes
     }
-
+ 
     
-    enum CodingKeys: String, CodingKey {
-        case id
-        case name
-        case articles
-        case createdAt
-        case updatedAt
-        case notes
-    }
-
+ 
 
     static func defaultCategories(context: ModelContext) {
         

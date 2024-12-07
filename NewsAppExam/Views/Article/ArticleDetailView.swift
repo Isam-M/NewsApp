@@ -21,7 +21,7 @@ struct ArticleDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                // Bilde
+                
                 if let imageUrl = apiArticle?.urlToImage ?? article?.urlToImage, let url = URL(string: imageUrl) {
                     AsyncImage(url: url) { image in
                         image.resizable().scaledToFit().cornerRadius(8)
@@ -31,31 +31,31 @@ struct ArticleDetailView: View {
                     .frame(maxWidth: .infinity)
                 }
 
-                // Tittel
+                
                 Text(apiArticle?.title ?? article?.title ?? "No Title")
                     .font(.largeTitle)
                     .bold()
 
-                // Kilde
+                
                 Text("Source: \(apiArticle?.source.name ?? article?.source ?? "Unknown")")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
 
-                // Publiseringsdato
+                
                 if let publishedAt = apiArticle?.publishedAt ?? article?.publishedAt {
                     Text("Published: \(DateFormatterHelper.formatDate(publishedAt))")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
 
-                // Beskrivelse
+                
                 if let description = apiArticle?.description ?? article?.articleDescription {
                     Text(description)
                         .font(.body)
                         .padding(.bottom)
                 }
 
-                // Innhold
+                
                 if let content = apiArticle?.content ?? article?.content {
                     Text("Content:")
                         .font(.headline)
@@ -64,7 +64,7 @@ struct ArticleDetailView: View {
                         .font(.body)
                 }
 
-                // Velg lagre- eller redigeringsseksjon
+                
                 if article == nil && !isSaved {
                     SaveArticleSection(
                         selectedCategory: $selectedCategory,
@@ -116,13 +116,14 @@ struct ArticleDetailView: View {
         newArticle.createdAt = Date()
         newArticle.updatedAt = Date()
 
-        print("Created at: \(newArticle.createdAt)")
+        
 
         context.insert(newArticle)
 
         do {
             try context.save()
             print("Article saved!")
+            print("Created at: \(newArticle.createdAt)")
             isSaved = true
         } catch {
             print("Failed to save article: \(error)")
@@ -144,6 +145,7 @@ struct ArticleDetailView: View {
             print("Article updated!")
             isEditingCategory = false
             isEditingNotes = false
+            print("Updated at: \(article.updatedAt)")
         } catch {
             print("Failed to update article: \(error)")
         }

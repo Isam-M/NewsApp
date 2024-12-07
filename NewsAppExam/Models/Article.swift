@@ -1,9 +1,3 @@
-//
-//  Article.swift
-//  NewsAppExam
-//
-//  Created by Isam Melioui on 20/11/2024.
-//
 
 
 import Foundation
@@ -11,7 +5,7 @@ import SwiftData
 
 @Model
 class Article: Identifiable {
-    @Attribute(.unique) var id: UUID
+    var id: UUID
     var title: String
     var articleDescription: String?
     var source: String

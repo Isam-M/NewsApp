@@ -1,9 +1,8 @@
-//
-//  Search.swift
-//  NewsAppExam
-//
-//  Created by Isam Melioui on 20/11/2024.
-//
+
+
+
+
+
 
 
 import Foundation
@@ -11,7 +10,7 @@ import SwiftData
 
 @Model
 class Search: Identifiable {
-    @Attribute(.unique) var id: UUID
+    var id: UUID
     var keyword: String
     var createdAt: Date
     var updatedAt: Date
@@ -26,11 +25,5 @@ class Search: Identifiable {
     }
 
     
-    enum CodingKeys: String, CodingKey {
-        case id
-        case keyword
-        case createdAt
-        case updatedAt
-        case notes
-    }
+   
 }

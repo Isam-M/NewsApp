@@ -45,7 +45,7 @@ struct SplashScreenView: View {
                     .padding(.top, 30)
                     .opacity(opacity)
 
-                // Undertekst
+                
                 Text("All the news, one search away.")
                     .font(.headline)
                     .foregroundColor(.gray)
