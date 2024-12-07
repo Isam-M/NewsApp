@@ -25,7 +25,7 @@ struct NewsTickerSettingsView: View {
                 }
                 .pickerStyle(SegmentedPickerStyle())
 
-                Stepper("News Count: \(tickerNewsCount)", value: $tickerNewsCount, in: 1...20)
+                Stepper("News Count: \(tickerNewsCount)", value: $tickerNewsCount, in: 1...99)
 
                 Picker("Country", selection: $tickerCountry) {
                     Text("All").tag("")
