@@ -80,7 +80,7 @@ struct HomeView: View {
 
     private func fetchTopHeadlines() {
         Task {
-            let headlinesCount = UserDefaults.standard.integer(forKey: "tickerNewsCount")
+            let headlinesCount = tickerNewsCount
             print("Fetching \(headlinesCount) headlines")
 
             headlines = []
