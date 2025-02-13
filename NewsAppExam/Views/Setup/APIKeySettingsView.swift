@@ -2,7 +2,7 @@ import SwiftUI
 
 struct APIKeySettingsView: View {
     @State private var apiKey: String = ""
-    private let defaultApiKey = "9be243a1a16d4e199359a387e3e9cf24"
+    private let defaultApiKey = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
